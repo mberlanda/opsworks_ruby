@@ -8,7 +8,7 @@ prepare_recipe
 
 execute 'delete existing crontabs' do
   user node['deployer']['user'] || 'root'
-  command 'bash -c "crontab -r && exit 0"'
+  command 'bash -c "crontab -r || exit 0"'
 end
 
 every_enabled_application do |app|
