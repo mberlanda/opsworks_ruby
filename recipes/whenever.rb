@@ -11,8 +11,8 @@ execute 'delete existing crontabs' do
   command 'crontab -r'
 end
 
-every_enabled_application.each do |application|
-  app_deploy_dir = deploy_dir(application)
+every_enabled_application do |app|
+  app_deploy_dir = deploy_dir(app)
   latest_release = Dir.glob("#{app_deploy_dir}/*").map { |d| d.gsub("#{app_deploy_dir}/", '').to_i }.max.to_s
 
   execute 'create new crontabs from whenever gem' do
