@@ -17,7 +17,7 @@ RSpec.configure do |config|
 end
 
 # coveralls
-require 'coveralls'
-Coveralls.wear!
+# require 'coveralls'
+# Coveralls.wear!
 
-at_exit { ChefSpec::Coverage.report! }
+# at_exit { ChefSpec::Coverage.report! }
