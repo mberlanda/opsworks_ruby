@@ -1,10 +1,24 @@
 # frozen_string_literal: true
+
 #
 # Cookbook Name:: opsworks_ruby
 # Recipe:: setup
 #
 
 prepare_recipe
+
+# Monit and cleanup
+if node['platform_family'] == 'debian'
+  execute 'mkdir -p /etc/monit/conf.d'
+
+  file '/etc/monit/conf.d/00_httpd.monitrc' do
+    content "set httpd port 2812 and\n    use address localhost\n    allow localhost"
+  end
+
+  apt_package 'javascript-common' do
+    action :purge
+  end
+end
 
 # Ruby and bundler
 include_recipe 'deployer'
@@ -20,13 +34,16 @@ end
 apt_repository 'apache2' do
   uri 'http://ppa.launchpad.net/ondrej/apache2/ubuntu'
   distribution node['lsb']['codename']
-  components %w(main)
+  components %w[main]
   keyserver 'keyserver.ubuntu.com'
   key 'E5267A6C'
   only_if { node['platform'] == 'ubuntu' }
 end
 
-gem_package 'bundler'
+gem_package 'bundler' do
+  action :install
+end
+
 if node['platform_family'] == 'debian'
   link '/usr/local/bin/bundle' do
     to '/usr/bin/bundle'

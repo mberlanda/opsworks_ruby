@@ -3,11 +3,13 @@
 # ruby
 
 default['build-essential']['compile_time'] = true
-default['ruby-ng']['ruby_version'] = node['ruby'].try(:[], 'version') || '2.3'
-default['nginx']['source']['modules'] = %w(
+default['ruby-ng']['ruby_version'] = node['ruby'].try(:[], 'version') || '2.4'
+default['nginx']['source']['modules'] = %w[
   nginx::http_ssl_module nginx::http_realip_module nginx::http_gzip_static_module nginx::headers_more_module
   nginx::http_stub_status_module
-)
+]
+
+default['deploy']['timeout'] = 600
 
 # global
 default['defaults']['global']['environment'] = 'production'
@@ -19,9 +21,10 @@ default['defaults']['global']['symlinks'] = {
   'log' => 'log'
 }
 default['defaults']['global']['create_dirs_before_symlink'] =
-  %w(tmp public config ../../shared/cache ../../shared/assets)
-default['defaults']['global']['purge_before_symlink'] = %w(log tmp/cache tmp/pids public/system public/assets)
+  %w[tmp public config ../../shared/cache ../../shared/assets]
+default['defaults']['global']['purge_before_symlink'] = %w[log tmp/cache tmp/pids public/system public/assets]
 default['defaults']['global']['rollback_on_error'] = true
+default['defaults']['global']['logrotate_rotate'] = 30
 
 # database
 ## common
@@ -70,11 +73,11 @@ default['defaults']['webserver']['ssl_for_legacy_browsers'] = false
 default['defaults']['webserver']['extra_config'] = ''
 default['defaults']['webserver']['extra_config_ssl'] = ''
 default['defaults']['webserver']['keepalive_timeout'] = '15'
+default['defaults']['webserver']['log_level'] = 'info'
 
 ## apache2
 
 default['defaults']['webserver']['limit_request_body'] = '1048576'
-default['defaults']['webserver']['log_level'] = 'info'
 default['defaults']['webserver']['proxy_timeout'] = '60'
 
 ## nginx
@@ -89,6 +92,7 @@ default['nginx']['log_dir'] = '/var/log/nginx'
 default['nginx']['proxy_read_timeout'] = '60'
 default['nginx']['proxy_send_timeout'] = '60'
 default['nginx']['send_timeout'] = '10'
+default['nginx']['enable_upgrade_method'] = false
 
 # framework
 ## common
@@ -99,8 +103,10 @@ default['defaults']['framework']['adapter'] = 'rails'
 
 default['defaults']['framework']['migrate'] = true
 default['defaults']['framework']['migration_command'] =
-  '/usr/local/bin/bundle exec rake db:version > /dev/null 2>&1 ' \
-  '&& /usr/local/bin/bundle exec rake db:migrate || /usr/local/bin/bundle exec rake db:setup'
+  'case $(/usr/local/bin/bundle exec rake db:version 2>&1) in ' \
+  '*"ActiveRecord::NoDatabaseError"*) /usr/local/bin/bundle exec rake db:setup;; ' \
+  '*) /usr/local/bin/bundle exec rake db:migrate;; ' \
+  'esac'
 default['defaults']['framework']['assets_precompile'] = true
 default['defaults']['framework']['assets_precompilation_command'] = '/usr/local/bin/bundle exec rake assets:precompile'
 default['defaults']['framework']['envs_in_console'] = false
