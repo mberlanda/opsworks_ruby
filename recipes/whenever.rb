@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # Cookbook Name:: opsworks_ruby
 # Recipe:: whenever
@@ -12,9 +13,8 @@ execute 'delete existing crontabs' do
 end
 
 every_enabled_application do |app|
-  deploy_to = deploy_dir(app)
-  releases = Dir[File.join(deploy_to, 'releases', '*')].map { |fp| fp.split('/').last }
-  release_path = File.join(deploy_to, 'releases', releases.map(&:to_i).max.to_s)
+  deploy_dir = deploy_dir(app)
+  release_path = "#{deploy_dir}/current"
 
   execute 'create new crontabs from whenever gem' do
     command 'RAILS_ENV=production bin/bundle exec whenever --update-crontab'

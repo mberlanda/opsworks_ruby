@@ -23,3 +23,5 @@ docs/build/*
 vendor
 client.pem
 .chef.login
+
+*.tar.gz
